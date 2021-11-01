@@ -19,7 +19,7 @@
 
 
 void vcp_th(ULONG thread_input);
-void vcp_transmit(void* p_data, uint32_t nBytes);
+void vcp_send(void* p_data, uint32_t nBytes);
 UINT vcp_init(UART_HandleTypeDef *phuart);
 
 #endif /* APPLICATION_VCP_TH_H_ */

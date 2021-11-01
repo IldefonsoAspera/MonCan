@@ -14,9 +14,6 @@
 uint8_t  			 txBuffer[2][VCP_TX_BUFFER_SIZE];	// Ping pong buffers with outgoing data (TX)
 uint32_t 			 nBytes = 0;						// Number of bytes written in buffer not being TX'd
 uint8_t* 			 p_txBuffer = txBuffer[0];			// Pointer to current buffer being filled
-
-uint8_t				 vcpTxq_array[500];
-TX_QUEUE           	 vcpTx_queue;
 UART_HandleTypeDef*  p_huart = NULL;
 TX_EVENT_FLAGS_GROUP vcpTxFlag;
 
@@ -46,7 +43,8 @@ void vcp_th(ULONG thread_input)
 }
 
 
-void vcp_transmit(void* p_data, uint32_t length)
+// TODO investigate if calling this function inside while interrupts are disabled would cause them to reactivate prematurely
+void vcp_send(void* p_data, uint32_t length)
 {
 	__disable_irq();
 	if(length <= sizeof(txBuffer[0]) - nBytes)
