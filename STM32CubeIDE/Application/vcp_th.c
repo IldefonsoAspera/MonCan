@@ -8,45 +8,60 @@
 #include <stdint.h>
 #include "vcp_th.h"
 
+#define BUFFER_READY_FLAG	1
 
 
+uint8_t  			 txBuffer[2][VCP_TX_BUFFER_SIZE];	// Ping pong buffers with outgoing data (TX)
+uint32_t 			 nBytes = 0;						// Number of bytes written in buffer not being TX'd
+uint8_t* 			 p_txBuffer = txBuffer[0];			// Pointer to current buffer being filled
 
-uint8_t				vcpTxq_array[500];
-TX_QUEUE           	vcpTx_queue;
-UART_HandleTypeDef 	*mp_huart = NULL;
-
+uint8_t				 vcpTxq_array[500];
+TX_QUEUE           	 vcpTx_queue;
+UART_HandleTypeDef*  p_huart = NULL;
+TX_EVENT_FLAGS_GROUP vcpTxFlag;
 
 
 
 void vcp_th(ULONG thread_input)
 {
-	uint8_t* qItem;
-
-	if (tx_queue_create(&vcpTx_queue, "vcpTx queue",TX_1_ULONG, vcpTxq_array, sizeof(vcpTxq_array)) != TX_SUCCESS)
-	{
-		return;
-	}
-
-
 	while(1)
 	{
-
-		if(tx_queue_receive(&vcpTx_queue, &qItem, TX_WAIT_FOREVER) == TX_SUCCESS)
+		uint32_t dummy;
+		if(tx_event_flags_get(&vcpTxFlag, BUFFER_READY_FLAG, TX_OR_CLEAR, &dummy, TX_WAIT_FOREVER) == TX_SUCCESS)
 		{
+			uint8_t *outgoing_buffer;
+			uint32_t outgoing_nBytes;
+
+			__disable_irq();
+			outgoing_buffer = p_txBuffer;
+			outgoing_nBytes = nBytes;
+			p_txBuffer      = (p_txBuffer == txBuffer[0]) ? txBuffer[1] : txBuffer[0];
+			nBytes          = 0;
+			__enable_irq();
+
 			BSP_LED_Toggle(LED_GREEN);
-			HAL_UART_Transmit(mp_huart, qItem, strlen((const char*)qItem), HAL_MAX_DELAY);
+			HAL_UART_Transmit(p_huart, outgoing_buffer, outgoing_nBytes, HAL_MAX_DELAY);
 		}
 	}
 }
 
 
-void vcp_send(char* string)
+void vcp_transmit(void* p_data, uint32_t length)
 {
-	tx_queue_send(&vcpTx_queue, &string, TX_NO_WAIT);
+	__disable_irq();
+	if(length <= sizeof(txBuffer[0]) - nBytes)
+	{
+		memcpy(&p_txBuffer[nBytes], p_data, length);
+		nBytes += length;
+	}
+	__enable_irq();
+
+	tx_event_flags_set(&vcpTxFlag, BUFFER_READY_FLAG, TX_OR);
 }
 
 
-void vcp_init(UART_HandleTypeDef *p_huart)
+UINT vcp_init(UART_HandleTypeDef *phuart)
 {
-	mp_huart = p_huart;
+	p_huart = phuart;
+	return tx_event_flags_create(&vcpTxFlag, "vcpTxFlag");
 }

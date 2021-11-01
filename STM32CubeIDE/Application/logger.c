@@ -18,7 +18,7 @@ void log_th(ULONG thread_input)
 	while(1)
 	{
 		//BSP_LED_Toggle(LED_GREEN);
-		vcp_send("Hola mundo\n");
+		vcp_transmit("Hola mundo\n", strlen("Hola mundo\n"));
 		tx_thread_sleep(100);		// Thread sleep for 1s
 	}
 }
