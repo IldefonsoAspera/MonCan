@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "main.h"
 #include "vcp_th.h"
+#include "logger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +45,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
+
+uint8_t   vcp_th_stack[APP_STACK_SIZE];
 TX_THREAD ThreadVCP;
+uint8_t   log_th_stack[APP_STACK_SIZE];
+TX_THREAD ThreadLogger;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,29 +65,31 @@ TX_THREAD ThreadVCP;
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
   UINT ret = TX_SUCCESS;
-  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
   /* USER CODE END App_ThreadX_MEM_POOL */
 
   /* USER CODE BEGIN App_ThreadX_Init */
-  CHAR *pointer;
-
-
-  // Allocate the stack for uart Thread
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer, APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
-  {
-	  ret = TX_POOL_ERROR;
-  }
 
   // Create uart Thread
   if (tx_thread_create(&ThreadVCP, "vcpTh", vcp_th, 0,
-                         pointer, APP_STACK_SIZE,
+		  	  	  	  	 vcp_th_stack, sizeof(vcp_th_stack),
                          VCP_THREAD_PRIO, VCP_THREAD_PREEMPTION_THRESHOLD,
                          TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
   {
     ret = TX_THREAD_ERROR;
   }
+
+
+  // Create logger Thread
+  if (tx_thread_create(&ThreadLogger, "logTh", log_th, 0,
+		  	  	  	  	 log_th_stack, sizeof(log_th_stack),
+                         LOG_THREAD_PRIO, LOG_THREAD_PREEMPTION_THRESHOLD,
+                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+  {
+    ret = TX_THREAD_ERROR;
+  }
+
 
 
   /* USER CODE END App_ThreadX_Init */
