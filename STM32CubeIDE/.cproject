@@ -51,6 +51,7 @@
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/threadx/common/inc/"/>
 									<listOptionValue builtIn="false" value="../../Middlewares/ST/threadx/ports/cortex_m7/gnu/inc/"/>
 									<listOptionValue builtIn="false" value="../../Drivers/BSP/STM32H7xx_Nucleo"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Tx_Thread_Creation/Application}&quot;"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1364603489" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>
