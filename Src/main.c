@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "tx_api.h"
 #include "vcp_th.h"
+#include "logger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,6 +103,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   vcp_init(&huart3);
+  log_init();
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();

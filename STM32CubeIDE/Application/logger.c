@@ -11,6 +11,23 @@
 
 
 
+#define LOG_IN_QUEUE_SIZE		2048
+#define CEILING_MULT_OF_4(x)	(((x)>>2) + ((x & 0x03) > 0))
+
+
+struct queue_item
+{
+	uint32_t 		   data;
+	uint16_t           str_len;
+	enum log_data_type type;
+};
+
+
+uint8_t qLogBuffer[LOG_IN_QUEUE_SIZE];
+TX_QUEUE qLog;
+
+
+
 static inline uint8_t process_number_decimal(uint32_t number, char *output)
 {
 	uint32_t divider = 1000000000UL;
@@ -56,33 +73,40 @@ static inline uint8_t process_number_hex(uint32_t number, char *output)
 }
 
 
-void _log_string(char *string, uint32_t length)
+void _log_const_string(const char *string, uint32_t length)
+{
+	struct queue_item item = {.type = LOG_STRING, .data = (uint32_t)string, .str_len = length};
+	tx_queue_send(&qLog, &item, TX_NO_WAIT);
+}
+
+
+static void proc_string(char *string, uint32_t length)
 {
 	vcp_send(string, length);
 }
 
 
-void log_uint_dec(uint32_t number)
+static void proc_uint_dec(uint32_t number)
 {
 	char output[10];
 	uint8_t n_digits;
 
 	n_digits = process_number_decimal(number, output);
-	_log_string(&output[10 - n_digits], n_digits);
+	proc_string(&output[10 - n_digits], n_digits);
 }
 
 
-void log_uint_hex(uint32_t number)
+static void proc_uint_hex(uint32_t number)
 {
 	char output[8];
 	uint8_t n_digits;
 
 	n_digits = process_number_hex(number, output);
-	_log_string(&output[8 - n_digits], n_digits);
+	proc_string(&output[8 - n_digits], n_digits);
 }
 
 
-void log_sint_dec(int32_t number)
+static void proc_sint_dec(int32_t number)
 {
 	char output[11];
 	bool is_negative = number < 0;
@@ -96,81 +120,61 @@ void log_sint_dec(int32_t number)
 	if(is_negative)
 		output[10 - n_digits++] = '-';
 
-	_log_string(&output[11 - n_digits], n_digits);
+	proc_string(&output[11 - n_digits], n_digits);
 }
 
 
-void log_sint_hex(int32_t number)
+static void proc_sint_hex(int32_t number)
 {
-	log_uint_hex((uint32_t)number);
+	proc_uint_hex((uint32_t)number);
+}
+
+
+void _log_var(uint32_t number, enum log_data_type type)
+{
+	struct queue_item item = {.type = type, .data = number};
+	tx_queue_send(&qLog, &item, TX_NO_WAIT);
 }
 
 
 void log_th(ULONG thread_input)
 {
-
 	while(1)
 	{
-		//BSP_LED_Toggle(LED_GREEN);
-		log_string("Hola mundo\n");
-		log_uint_dec(123456789);
-		log_string("\n");
-		log_uint_dec(123456);
-		log_string("\n");
-		log_uint_dec(1234);
-		log_string("\n");
-		log_uint_dec(123);
-		log_string("\n");
-		log_uint_dec(0);
-		log_string("\n");
+		struct queue_item item;
 
-		log_uint_hex(0xFEDCBA98);
-		log_string("\n");
-		log_uint_hex(0xFEDCBA);
-		log_string("\n");
-		log_uint_hex(0xFEDC);
-		log_string("\n");
-		log_uint_hex(0xFE);
-		log_string("\n");
-		log_uint_hex(0);
-		log_string("\n");
+		if(tx_queue_receive(&qLog, &item, TX_WAIT_FOREVER) == TX_SUCCESS)
+		{
+			switch(item.type)
+			{
+			case LOG_STRING:
+				proc_string((char*)item.data, item.str_len);
+				break;
+			case LOG_UINT_DEC:
+				proc_uint_dec(item.data);
+				break;
+			case LOG_UINT_HEX:
+				proc_uint_hex(item.data);
+				break;
+			case LOG_INT_DEC:
+				proc_sint_dec((int32_t)item.data);
+				break;
+			case LOG_INT_HEX:
+				proc_sint_hex((int32_t)item.data);
 
-		log_sint_dec(123456789);
-		log_string("\n");
-		log_sint_dec(123456);
-		log_string("\n");
-		log_sint_dec(1234);
-		log_string("\n");
-		log_sint_dec(123);
-		log_string("\n");
-		log_sint_dec(0);
-		log_string("\n");
-
-		log_sint_dec(-123456789);
-		log_string("\n");
-		log_sint_dec(-123456);
-		log_string("\n");
-		log_sint_dec(-1234);
-		log_string("\n");
-		log_sint_dec(-123);
-		log_string("\n");
-		log_sint_dec(0);
-		log_string("\n");
-
-		log_sint_dec(INT32_MIN);
-		log_string("\n");
-
-		log_sint_hex(0xFEDCBA98);
-		log_string("\n");
-		log_sint_hex(0xFEDCBA);
-		log_string("\n");
-		log_sint_hex(0xFEDC);
-		log_string("\n");
-		log_sint_hex(0xFE);
-		log_string("\n");
-		log_sint_hex(0);
-		log_string("\n");
-
-		tx_thread_sleep(100);		// Thread sleep for 1s
+				break;
+			}
+		}
 	}
 }
+
+
+
+
+UINT log_init(void)
+{
+	return tx_queue_create(&qLog, "log in queue", CEILING_MULT_OF_4(sizeof(struct queue_item)), qLogBuffer, sizeof(qLogBuffer));
+}
+
+
+

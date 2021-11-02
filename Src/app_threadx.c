@@ -26,6 +26,7 @@
 #include "main.h"
 #include "vcp_th.h"
 #include "logger.h"
+#include "demo.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,6 +51,8 @@ uint8_t   vcp_th_stack[APP_STACK_SIZE];
 TX_THREAD ThreadVCP;
 uint8_t   log_th_stack[APP_STACK_SIZE];
 TX_THREAD ThreadLogger;
+uint8_t   demo_th_stack[APP_STACK_SIZE];
+TX_THREAD ThreadDemo;
 
 /* USER CODE END PV */
 
@@ -91,6 +94,14 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   }
 
 
+  // Create demo Thread
+  if (tx_thread_create(&ThreadDemo, "demoTh", demo_th, 0,
+		  	  	  	  	 demo_th_stack, sizeof(demo_th_stack),
+                         DEMO_THREAD_PRIO, DEMO_THREAD_PREEMPTION_THRESHOLD,
+                         TX_NO_TIME_SLICE, TX_AUTO_START) != TX_SUCCESS)
+  {
+    ret = TX_THREAD_ERROR;
+  }
 
   /* USER CODE END App_ThreadX_Init */
 
