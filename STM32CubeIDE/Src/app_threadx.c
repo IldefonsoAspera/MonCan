@@ -68,12 +68,14 @@ TX_THREAD ThreadDemo;
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
   UINT ret = TX_SUCCESS;
+  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
   /* USER CODE END App_ThreadX_MEM_POOL */
 
   /* USER CODE BEGIN App_ThreadX_Init */
 
+  (void)byte_pool;
   // Create uart Thread
   if (tx_thread_create(&ThreadVCP, "vcpTh", vcp_th, 0,
 		  	  	  	  	 vcp_th_stack, sizeof(vcp_th_stack),

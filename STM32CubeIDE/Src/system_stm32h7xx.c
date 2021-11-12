@@ -22,12 +22,13 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2017-2021 STMicroelectronics.
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
@@ -360,7 +361,8 @@ void SystemCoreClockUpdate (void)
         break;
 
       default:
-          pllvco = ((float_t)CSI_VALUE / (float_t)pllm) * ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1/(float_t)0x2000) +(float_t)1 );
+          hsivalue = (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV)>> 3)) ;
+          pllvco = ((float_t)hsivalue / (float_t)pllm) * ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1/(float_t)0x2000) +(float_t)1 );
         break;
       }
       pllp = (((RCC->PLL1DIVR & RCC_PLL1DIVR_P1) >>9) + 1U ) ;
@@ -373,7 +375,7 @@ void SystemCoreClockUpdate (void)
     break;
 
   default:
-    common_system_clock = CSI_VALUE;
+    common_system_clock = (uint32_t) (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV)>> 3));
     break;
   }
 
@@ -417,3 +419,4 @@ void SystemCoreClockUpdate (void)
 /**
   * @}
   */
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

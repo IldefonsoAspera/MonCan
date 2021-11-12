@@ -9,6 +9,7 @@
 #define APPLICATION_DEMO_H_
 
 #include "app_threadx.h"
+#include "main.h"
 
 
 #define DEMO_THREAD_PRIO                          10
@@ -16,7 +17,7 @@
 
 
 void demo_th(ULONG thread_input);
-
+void demo_init(FDCAN_HandleTypeDef *phcan);
 
 
 #endif /* APPLICATION_DEMO_H_ */

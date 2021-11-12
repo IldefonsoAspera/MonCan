@@ -8,7 +8,7 @@
 #ifndef APPLICATION_USER_LOGGER_H_
 #define APPLICATION_USER_LOGGER_H_
 
-//#include <string.h>
+#include <stdint.h>
 #include "app_threadx.h"
 
 

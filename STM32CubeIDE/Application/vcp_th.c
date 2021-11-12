@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 #include "vcp_th.h"
-
+#include "stm32h7xx_nucleo.h"
 
 
 #define BUFFER_READY_FLAG	1
@@ -36,7 +36,7 @@ void vcp_th(ULONG thread_input)
 		uint32_t dummy;
 
 		status = tx_event_flags_get(&m_data.vcpTxFlag, BUFFER_READY_FLAG, TX_OR_CLEAR, &dummy, TX_WAIT_FOREVER);
-		if(status == TX_SUCCESS && (m_data.vcpTxFlag.tx_event_flags_group_current & BUFFER_READY_FLAG))
+		if(status == TX_SUCCESS /*&& (m_data.vcpTxFlag.tx_event_flags_group_current & BUFFER_READY_FLAG)*/)
 		{
 			uint8_t *outgoing_buffer;
 			uint32_t outgoing_nBytes;

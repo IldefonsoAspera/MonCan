@@ -1,10 +1,9 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    ThreadX/Tx_Thread_Creation/Inc/main.h
+  * @file    app_threadx.h
   * @author  MCD Application Team
-  * @brief   This file contains all the functions prototypes for the main.c
-  *          file.
+  * @brief   ThreadX applicative header file
   ******************************************************************************
   * @attention
   *
@@ -18,21 +17,20 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __APP_THREADX_H__
+#define __APP_THREADX_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h7xx_hal.h"
+#include "tx_api.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32h7xx_nucleo.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -51,21 +49,36 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
+UINT App_ThreadX_Init(VOID *memory_ptr);
+void MX_ThreadX_Init(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-/* USER CODE BEGIN Private defines */
+/* USER CODE BEGIN PD */
+#define APP_STACK_SIZE                           512
+#define APP_BYTE_POOL_SIZE                       (12 * 1024)
 
-/* USER CODE END Private defines */
+#define THREAD_ONE_PRIO                          10
+#define THREAD_ONE_PREEMPTION_THRESHOLD          THREAD_ONE_PRIO
+#define THREAD_TWO_PRIO                          10
+#define THREAD_TWO_PREEMPTION_THRESHOLD          9
+#define MAIN_THREAD_PRIO                         5
+#define MAIN_THREAD_PREEMPTION_THRESHOLD         MAIN_THREAD_PRIO
+
+#define NEW_THREAD_TWO_PRIO                      8
+#define NEW_THREAD_TWO_PREEMPTION_THRESHOLD      8
+
+#define THREAD_ONE_EVT                           0x01
+#define THREAD_TWO_EVT                           0x02
+/* USER CODE END PD */
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#endif /* __APP_THREADX_H__ */

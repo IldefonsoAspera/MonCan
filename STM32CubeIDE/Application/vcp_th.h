@@ -10,6 +10,7 @@
 
 
 #include "app_threadx.h"
+#include "main.h"
 
 
 #define VCP_TX_BUFFER_SIZE					1024
