@@ -51,25 +51,16 @@ static inline uint8_t process_number_decimal(uint32_t number, char *output)
 }
 
 
-static inline uint8_t process_number_hex(uint32_t number, char *output)
+static inline void process_number_hex(uint32_t number, char *output, uint8_t n_digits)
 {
 	char hexVals[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 	int8_t i;
 
-	for(i = 7; i > -1; i--)
+	for(i = sizeof(number)*2 - 1; i > -1; i--)
 	{
 		output[i] = hexVals[number & 0x0F];
 		number >>= 4;
 	}
-
-	i = 0;
-	while(i < 8 && output[i] == 0x30)
-		i++;
-
-	if(i == 8)		// Case when all digits are 0 should print one digit ('0')
-		return 1;
-	else			// Return number of digits to print without leading zeroes
-		return 8-i;
 }
 
 
@@ -96,12 +87,11 @@ static void proc_uint_dec(uint32_t number)
 }
 
 
-static void proc_uint_hex(uint32_t number)
+static void proc_hex(uint32_t number, uint8_t n_digits)
 {
-	char output[8];
-	uint8_t n_digits;
+	char output[sizeof(number)*2];
 
-	n_digits = process_number_hex(number, output);
+	process_number_hex(number, output, n_digits);
 	proc_string(&output[8 - n_digits], n_digits);
 }
 
@@ -121,12 +111,6 @@ static void proc_sint_dec(int32_t number)
 		output[10 - n_digits++] = '-';
 
 	proc_string(&output[11 - n_digits], n_digits);
-}
-
-
-static void proc_sint_hex(int32_t number)
-{
-	proc_uint_hex((uint32_t)number);
 }
 
 
@@ -153,15 +137,17 @@ void log_th(ULONG thread_input)
 			case LOG_UINT_DEC:
 				proc_uint_dec(item.data);
 				break;
-			case LOG_UINT_HEX:
-				proc_uint_hex(item.data);
-				break;
 			case LOG_INT_DEC:
 				proc_sint_dec((int32_t)item.data);
 				break;
-			case LOG_INT_HEX:
-				proc_sint_hex((int32_t)item.data);
-
+			case LOG_HEX_2:
+				proc_hex(item.data, 2);
+				break;
+			case LOG_HEX_4:
+				proc_hex(item.data, 4);
+				break;
+			case LOG_HEX_8:
+				proc_hex(item.data, 8);
 				break;
 			}
 		}

@@ -24,7 +24,7 @@ struct vcp_data
 };
 
 
-struct vcp_data m_data = {.p_huart = NULL, .nBytesFilled = 0};
+struct vcp_data m_data = {.p_huart = NULL, .nBytesFilled = 0, .p_toFill = m_data.txBuffer[0]};
 
 
 
